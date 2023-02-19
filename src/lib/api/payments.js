@@ -95,6 +95,10 @@ export async function Payment(metadata, unit_price, notification_url) {
   }
 }
 
+export async function MerchantOrder(id) {
+  return await mercadopago.merchant_orders.get(id);
+}
+
 export async function Notification(id) {
   try {
     return await mercadopago.payment.get(id).then(async ({ body }) => {
