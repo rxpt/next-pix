@@ -97,11 +97,11 @@ export async function Payment(metadata, unit_price, notification_url) {
 
 export async function Notification(id) {
   try {
-    mercadopago.payment.get(id).then(async ({ body }) => {
+    await mercadopago.payment.get(id).then(async ({ body }) => {
       if (!body) throw new Error("Non-existent data");
       const { status, metadata, currency_id } = body;
       if (status === "approved") {
-        return await axios.post(
+        await axios.post(
           `https://api.streamelements.com/kappa/v2/tips/${channel}`,
           {
             user: {
@@ -123,7 +123,7 @@ export async function Notification(id) {
           }
         );
       }
-      return "Not approved";
+      return body;
     });
   } catch (err) {
     return err;

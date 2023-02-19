@@ -2,7 +2,6 @@ import { Notification } from "@/lib/api/payments";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    console.log(req.headers);
     try {
       const id = req.body?.data?.id || req.query?.id || req.query?.["data.id"];
       const type = req.body?.type || req.query?.topic;
