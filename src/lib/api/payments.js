@@ -57,7 +57,7 @@ export function calculatePayment(desiredValue, interestRate) {
   return result;
 }
 
-export async function Payment(metadata, unit_price) {
+export async function Payment(metadata, unit_price, notification_url) {
   try {
     /*
     metadata.userId
@@ -84,9 +84,7 @@ export async function Payment(metadata, unit_price) {
       payer: {
         email: metadata.email,
       },
-      notification_url: `https://${
-        process.env.SITE_URL || process.env.VERCEL_URL
-      }/api/mercadopago/notification`,
+      notification_url,
       statement_descriptor: "TWITCHXOGUM",
       external_reference: `${metadata.userId}.${reference_id}`,
       metadata,

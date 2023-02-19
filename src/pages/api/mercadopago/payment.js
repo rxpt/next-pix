@@ -14,7 +14,13 @@ export default async function handler(req, res) {
       const paymentValue = req.body.coverFee
         ? payment.totalValue
         : payment.originalValue;
-      const result = await Payment(req.body, paymentValue);
+      const result = await Payment(
+        req.body,
+        paymentValue,
+        `https://${
+          req.headers.host || process.env.SITE_BASEURL_URL
+        }/api/mercadopago/notification`
+      );
       return res.status(200).json({ payment_url: result });
     } catch (err) {
       console.log(err);
