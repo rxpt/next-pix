@@ -2,13 +2,13 @@ import { Notification } from "@/lib/api/payments";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    console.log("body:", req.body);
-    console.log("query:", req.query);
+    console.log(req.headers);
     try {
-      const id = req.query.data.id;
-      const type = req.query.type;
+      const id = req.body?.data?.id || req.query?.id || req.query?.["data.id"];
+      const type = req.body?.type || req.query?.topic;
       if (type === "payment" && !!id) {
-        await Notification(id);
+        const notification = await Notification(id);
+        console.log(notification);
       }
       return res.status(200).send("ok");
     } catch (err) {
