@@ -1,4 +1,4 @@
-import { MerchantOrder, Notification } from "@/lib/api/payments";
+import { MerchantOrder, Payment } from "@/lib/api/payments";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -6,8 +6,8 @@ export default async function handler(req, res) {
       const id = req.body?.data?.id || req.query?.id || req.query?.["data.id"];
       const type = req.body?.type || req.query?.topic;
       if (type === "payment" && !!id) {
-        const notification = await Notification(id);
-        console.log("Payment", notification);
+        const payment = await Payment(id);
+        console.log("Payment:", payment);
       }
       if (type === "merchant_order" && !!id) {
         const order = await MerchantOrder(id);

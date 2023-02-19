@@ -57,7 +57,7 @@ export function calculatePayment(desiredValue, interestRate) {
   return result;
 }
 
-export async function Payment(metadata, unit_price, notification_url) {
+export async function CreateOrder(metadata, unit_price, notification_url) {
   try {
     /*
     metadata.userId
@@ -96,10 +96,10 @@ export async function Payment(metadata, unit_price, notification_url) {
 }
 
 export async function MerchantOrder(id) {
-  return await mercadopago.merchant_orders.get(id);
+  return await mercadopago.merchant_orders.get(id).then(({ body }) => body);
 }
 
-export async function Notification(id) {
+export async function Payment(id) {
   try {
     return await mercadopago.payment.get(id).then(async ({ body }) => {
       if (!body) throw new Error("Non-existent data");

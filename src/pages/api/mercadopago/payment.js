@@ -1,4 +1,4 @@
-import { Payment, calculatePayment } from "@/lib/api/payments";
+import { CreateOrder, calculatePayment } from "@/lib/api/payments";
 import { getSession } from "next-auth/react";
 
 export default async function handler(req, res) {
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       const paymentValue = req.body.coverFee
         ? payment.totalValue
         : payment.originalValue;
-      const result = await Payment(
+      const result = await CreateOrder(
         req.body,
         paymentValue,
         `https://${
