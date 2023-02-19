@@ -85,7 +85,7 @@ export async function Payment(metadata, unit_price) {
         email: metadata.email,
       },
       notification_url: `https://${
-        process.env.VERCEL_URL || process.env.SITE_URL
+        process.env.SITE_URL || process.env.VERCEL_URL
       }/api/mercadopago/notification`,
       statement_descriptor: "TWITCHXOGUM",
       external_reference: `${metadata.userId}.${reference_id}`,
