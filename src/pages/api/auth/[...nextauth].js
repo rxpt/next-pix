@@ -14,6 +14,7 @@ export const authOptions = {
       return session;
     },
   },
+  checks: "both",
 };
 
 export default NextAuth(authOptions);

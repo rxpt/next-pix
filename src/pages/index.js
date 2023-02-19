@@ -3,6 +3,12 @@ import { getServerSession } from "next-auth/next";
 import { getCsrfToken } from "next-auth/react";
 import { authOptions } from "./api/auth/[...nextauth]";
 import MessageForm from "@/components/messageForm";
+import { Exo } from "@next/font/google";
+const exoFont = Exo({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-exo",
+});
 
 export default function Home(props) {
   const { user, isAuthenticated } = props;
@@ -11,7 +17,9 @@ export default function Home(props) {
       <Head>
         <title>Mande uma mensagem - Xog.one</title>
       </Head>
-      <div className="w-full h-screen flex justify-center bg-zinc-800 text-white font-sans">
+      <div
+        className={`${exoFont.className} font-sans w-full h-screen flex justify-center bg-zinc-800 text-white`}
+      >
         <div className="columns-sm my-20">
           <div className="w-full max-w-full rounded-lg shadow border border-zinc-700 bg-zinc-900">
             <div className="p-10">
