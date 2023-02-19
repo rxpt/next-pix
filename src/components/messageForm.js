@@ -37,7 +37,7 @@ const cookies = Cookies.withConverter({
   },
 });
 
-const cookieName = "form-pix-data";
+const cookieName = "__Form-pix.data";
 
 export default function MessageForm({ isAuthenticated, user, csrfToken }) {
   const valueInputRef = useRef(null);
