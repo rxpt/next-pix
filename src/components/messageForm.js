@@ -4,6 +4,7 @@ import IntlCurrencyInput from "@/modules/currencyInput";
 import TextareaAutosize from "react-textarea-autosize";
 import { signIn } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
+import { FaTwitch, FaArrowRight, FaExclamationCircle } from "react-icons/fa";
 
 const currencyConfig = {
   locale: "pt-BR",
@@ -51,15 +52,14 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
     token: csrfToken,
   };
   const [formData, setFormData] = useState(defaultData);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitDisabled, setSubmitDisabled] = useState(false);
   useEffect(() => {
     const cookieData = cookies.get(cookieName);
     if (cookieData) setFormData(cookieData);
   }, []);
   useEffect(() => {
-    if (submitButtonRef.current)
-      submitButtonRef.current.disabled =
-        formData.amount < 0.99 || formData.amount > 999.99;
+    if (isAuthenticated)
+      setSubmitDisabled(formData.amount < 0.99 || formData.amount > 999.99);
   }, [formData]);
   const updateFormData = (key, value) => {
     setFormData((oldData) => {
@@ -70,8 +70,12 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
   };
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setSubmitting(true);
-    if (formData.amount >= 0.99 && formData.amount <= 999.99) {
+    setSubmitDisabled(true);
+    try {
+      if (formData.amount < 0.99 || formData.amount > 999.99) {
+        valueInputRef.current && valueInputRef.current.focus();
+        throw new Error("Este valor não é válido!");
+      }
       const JSONdata = JSON.stringify(formData);
       const endpoint = "/api/mercadopago/payment";
       const options = {
@@ -87,12 +91,10 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
         cookies.remove(cookieName);
         return (window.location.href = result.payment_url);
       }
-      toast.error("Tente novamente mais tarde.");
-      setSubmitting(false);
-    } else {
-      valueInputRef.current && valueInputRef.current.focus();
-      toast.error("Valor não permitido.");
-      setSubmitting(false);
+      throw new Error("Tente novamente mais tarde.");
+    } catch (err) {
+      toast.error(err.message);
+      setSubmitDisabled(false);
     }
   };
   return (
@@ -166,12 +168,21 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
         <div>
           <button
             onClick={() => (!isAuthenticated ? signIn("twitch") : void 0)}
-            className="transition-all ease-in-out duration-300 bg-violet-800 hover:bg-violet-700 p-3 rounded w-full uppercase tracking-wide font-semibold disabled:bg-zinc-500 disabled:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isAuthenticated && !submitting}
+            className="transition-all ease-in-out duration-300 bg-violet-800 hover:bg-violet-700 p-3 rounded w-full uppercase tracking-wide font-semibold disabled:bg-zinc-500 disabled:text-zinc-300 disabled:cursor-wait disabled:opacity-50 flex items-center justify-center gap-2"
+            disabled={submitDisabled}
             type={isAuthenticated ? "submit" : "button"}
             ref={submitButtonRef}
           >
-            {isAuthenticated ? "Continuar" : "Entrar com Twitch"}
+            {isAuthenticated ? (
+              <>
+                Continuar{" "}
+                {submitDisabled ? <FaExclamationCircle title="O valor mínimo é R$ 0,99" /> : <FaArrowRight />}
+              </>
+            ) : (
+              <>
+                <FaTwitch /> Entrar com Twitch
+              </>
+            )}
           </button>
         </div>
       </form>

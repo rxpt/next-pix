@@ -1,7 +1,8 @@
 import Head from "next/head";
 import { getServerSession } from "next-auth/next";
-import { getCsrfToken } from "next-auth/react";
+import { getCsrfToken, signIn, signOut } from "next-auth/react";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { FaSignOutAlt, FaSignInAlt } from "react-icons/fa";
 import MessageForm from "@/components/messageForm";
 import { Exo } from "@next/font/google";
 const exoFont = Exo({
@@ -24,8 +25,27 @@ export default function Home(props) {
           <div className="w-full max-w-full rounded-lg shadow border border-zinc-700 bg-zinc-900">
             <div className="p-10">
               <div className="flex flex-col items-center">
-                <span className="text-sm text-gray-400">
-                  Olá, {isAuthenticated ? user.name : "visitante"}!
+                <span className="text-sm text-gray-400 flex items-center gap-2">
+                  Olá,{" "}
+                  {isAuthenticated ? (
+                    <>
+                      {user.name}!{" "}
+                      <FaSignOutAlt
+                        onClick={() => signOut()}
+                        className="cursor-pointer"
+                        title="Sair"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      visitante!{" "}
+                      <FaSignInAlt
+                        onClick={() => signIn("twitch")}
+                        className="cursor-pointer"
+                        title="Entrar"
+                      />
+                    </>
+                  )}
                 </span>
                 <h1 className="mb-1 text-xl font-medium text-white">
                   Envie uma mensagem

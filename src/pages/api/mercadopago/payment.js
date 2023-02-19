@@ -4,6 +4,7 @@ import { getSession } from "next-auth/react";
 export default async function handler(req, res) {
   console.log("body:", req.body);
   console.log("query:", req.query);
+  console.log(`https://${process.env.VERCEL_URL || process.env.SITE_URL}`);
   if (req.method === "POST") {
     const session = await getSession({ req });
     if (!session || session.user.name !== req.body.userName) {
