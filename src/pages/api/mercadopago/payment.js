@@ -1,9 +1,10 @@
 import { CreateOrder, calculatePayment } from "@/lib/api/payments";
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth/react";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    const session = await getSession({ req });
+    const session = await getServerSession(req, res, authOptions);
     if (!session || !session.user) {
       return res.status(401).json({
         error: "Unauthorized",
