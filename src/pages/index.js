@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { getServerSession } from "next-auth/next";
-import { getCsrfToken, signIn, signOut } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { authOptions } from "./api/auth/[...nextauth]";
-import { FaSignOutAlt, FaSignInAlt, FaCookie } from "react-icons/fa";
+import { FaSignOutAlt, FaSignInAlt } from "react-icons/fa";
 import MessageForm from "@/components/messageForm";
 import { Exo } from "@next/font/google";
 const exoFont = Exo({
@@ -82,13 +82,11 @@ export default function Home(props) {
 }
 
 export async function getServerSideProps({ req, res }) {
-  const csrfToken = await getCsrfToken({ req });
   const session = await getServerSession(req, res, authOptions);
   return {
     props: {
       user: session?.user ?? {},
       isAuthenticated: !!session?.user,
-      csrfToken,
     },
   };
 }

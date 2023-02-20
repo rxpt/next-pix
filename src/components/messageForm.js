@@ -45,13 +45,12 @@ const cookies = Cookies.withConverter({
 
 const cookieName = "__Form-pix.data";
 
-export default function MessageForm({ isAuthenticated, user, csrfToken }) {
+export default function MessageForm({ isAuthenticated }) {
   const valueInputRef = useRef(null);
   const defaultData = {
     message: "",
     amount: 0,
     coverFee: false,
-    token: csrfToken,
   };
   const [formData, setFormData] = useState(defaultData);
   const [isSubmitting, setIsSubmitting] = useState(false);
