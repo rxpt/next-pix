@@ -4,7 +4,7 @@ import { getSession } from "next-auth/react";
 export default async function handler(req, res) {
   if (req.method === "POST") {
     const session = await getSession({ req });
-    if (!session || session.user.name !== req.body.userName) {
+    if (!session) {
       return res.status(401).json({
         error: "Unauthorized",
       });
