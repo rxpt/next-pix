@@ -8,6 +8,11 @@ export const authOptions = {
       clientSecret: process.env.TWITCH_CLIENT_SECRET,
     }),
   ],
+  pages: {
+    signIn: "/",
+    signOut: "/",
+    error: "/",
+  },
   callbacks: {
     async session({ session, token }) {
       session.user.id = token.sub;
@@ -15,6 +20,7 @@ export const authOptions = {
     },
   },
   checks: "both",
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export default NextAuth(authOptions);

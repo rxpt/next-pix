@@ -4,7 +4,13 @@ import IntlCurrencyInput from "@/modules/currencyInput";
 import TextareaAutosize from "react-textarea-autosize";
 import { signIn } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
-import { FaTwitch, FaArrowRight, FaExclamationCircle } from "react-icons/fa";
+import {
+  FaTwitch,
+  FaArrowRight,
+  FaExclamationCircle,
+  FaRocket,
+} from "react-icons/fa";
+import Tooltip from "./tooltip";
 
 const currencyConfig = {
   locale: "pt-BR",
@@ -41,7 +47,6 @@ const cookieName = "__Form-pix.data";
 
 export default function MessageForm({ isAuthenticated, user, csrfToken }) {
   const valueInputRef = useRef(null);
-  const submitButtonRef = useRef(null);
   const defaultData = {
     message: "",
     amount: 0,
@@ -52,6 +57,7 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
     token: csrfToken,
   };
   const [formData, setFormData] = useState(defaultData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(false);
   useEffect(() => {
     const cookieData = cookies.get(cookieName);
@@ -64,7 +70,7 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
   const updateFormData = (key, value) => {
     setFormData((oldData) => {
       const newData = { ...oldData, [key]: value };
-      cookies.set(cookieName, newData);
+      cookies.set(cookieName, newData, { expires: 7, path: "" });
       return newData;
     });
   };
@@ -76,6 +82,7 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
         valueInputRef.current && valueInputRef.current.focus();
         throw new Error("Este valor não é válido!");
       }
+      setIsSubmitting(true);
       const JSONdata = JSON.stringify(formData);
       const endpoint = "/api/mercadopago/payment";
       const options = {
@@ -88,12 +95,13 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
       const response = await fetch(endpoint, options);
       const result = await response.json();
       if (result.hasOwnProperty("payment_url")) {
-        cookies.remove(cookieName);
+        cookies.remove(cookieName, { path: "" });
         return (window.location.href = result.payment_url);
       }
       throw new Error("Tente novamente mais tarde.");
     } catch (err) {
       toast.error(err.message);
+      setIsSubmitting(false);
       setSubmitDisabled(false);
     }
   };
@@ -101,7 +109,7 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
     <>
       <Toaster position="bottom-center" />
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
+        <div className="relative flex w-full flex-wrap items-stretch mb-3">
           <label
             onClick={() =>
               valueInputRef.current && valueInputRef.current.focus()
@@ -115,7 +123,7 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
             required
             name="amount"
             placeholder="Valor"
-            className="form-input p-2.5 rounded w-full bg-zinc-600 mb-1 focus:shadow-xl focus:font-semibold focus:border-violet-500 focus:outline-none focus:ring-violet-500 focus:text-violet-300"
+            className="form-input p-2.5 rounded w-full bg-zinc-600 focus:shadow-xl focus:font-semibold focus:border-violet-500 focus:outline-none focus:ring-violet-500 focus:text-violet-300"
             max={999.99}
             autoFocus={true}
             currency="BRL"
@@ -130,7 +138,7 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
             O valor mínimo é R$ 0,99
           </p>
         </div>
-        <div className="mb-3">
+        <div className="relative flex w-full flex-wrap items-stretch mb-3">
           <label className="block font-medium text-sm text-zinc-500 tracking-wide">
             <input
               name="coverFee"
@@ -144,7 +152,7 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
             Cobrir taxa?
           </label>
         </div>
-        <div className="mb-3">
+        <div className="relative flex w-full flex-wrap items-stretch mb-3">
           <label
             htmlFor="message"
             className="block font-medium text-zinc-500 tracking-wide"
@@ -165,18 +173,30 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
             A mensagem pode conter até 200 caracteres
           </p>
         </div>
-        <div>
+        <div className="relative">
           <button
             onClick={() => (!isAuthenticated ? signIn("twitch") : void 0)}
-            className="transition-all ease-in-out duration-300 bg-violet-800 hover:bg-violet-700 p-3 rounded w-full uppercase tracking-wide font-semibold disabled:bg-zinc-500 disabled:text-zinc-300 disabled:cursor-wait disabled:opacity-50 flex items-center justify-center gap-2"
+            className="tracking-wide w-full bg-violet-500 text-white active:bg-violet-600 font-bold uppercase text-base px-8 py-3 rounded shadow-md hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 disabled:bg-zinc-500 disabled:text-zinc-300 disabled:opacity-50 flex items-center justify-center gap-2"
             disabled={submitDisabled}
             type={isAuthenticated ? "submit" : "button"}
-            ref={submitButtonRef}
           >
             {isAuthenticated ? (
               <>
                 Continuar{" "}
-                {submitDisabled ? <FaExclamationCircle title="O valor mínimo é R$ 0,99" /> : <FaArrowRight />}
+                {submitDisabled ? (
+                  isSubmitting ? (
+                    <FaRocket />
+                  ) : (
+                    <Tooltip message="Valor mínimo: R$ 0,99" position="left">
+                      <FaExclamationCircle
+                        className="tooltip-error"
+                        data-tooltip-variant="error"
+                      />
+                    </Tooltip>
+                  )
+                ) : (
+                  <FaArrowRight />
+                )}
               </>
             ) : (
               <>
