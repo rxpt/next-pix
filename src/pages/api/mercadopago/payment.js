@@ -4,18 +4,24 @@ import { getSession } from "next-auth/react";
 export default async function handler(req, res) {
   if (req.method === "POST") {
     const session = await getSession({ req });
-    if (!session) {
+    if (!session || !session.user) {
       return res.status(401).json({
         error: "Unauthorized",
       });
     }
     try {
+      const metadata = {
+        ...req.body,
+        userId: session.user.id,
+        userName: session.user.name,
+        email: session.user.email,
+      };
       const payment = calculatePayment(req.body.amount, 4.89);
       const paymentValue = req.body.coverFee
         ? payment.totalValue
         : payment.originalValue;
       const result = await CreateOrder(
-        req.body,
+        metadata,
         paymentValue,
         `https://${
           req.headers.host || process.env.SITE_BASEURL_URL

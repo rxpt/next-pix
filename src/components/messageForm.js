@@ -51,9 +51,6 @@ export default function MessageForm({ isAuthenticated, user, csrfToken }) {
     message: "",
     amount: 0,
     coverFee: false,
-    userId: user.id,
-    userName: user.name,
-    email: user.email,
     token: csrfToken,
   };
   const [formData, setFormData] = useState(defaultData);
