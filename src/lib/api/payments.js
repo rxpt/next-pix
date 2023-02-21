@@ -26,34 +26,47 @@ export function formatCurrency(value, locale, currency) {
 }
 
 /**
- * Calculates payment information based on desired value and interest rate.
- * @param {number|string} desiredValue - The desired payment value. If a string is passed, removes non-numeric characters.
- * @param {number} interestRate - The interest rate in percentage (e.g. 10 for 10%).
- * @returns {object} - An object with the total value to be paid, the interest rate value, the payment value, and the value without interest rate coverage.
+ * Calculates payment information based on the desired original value and interest rate (fee).
+ * @param {number|string} originalValue - The original value to be paid. If a string is passed, removes non-numeric characters.
+ * @param {number} fee - The interest rate in percentage (e.g. 10 for 10%).
+ * @returns {object} - An object with the total value to be paid (including all fees), the total value of the fees, the value with all fees and taxes included, the value of the fees only, the value without any fee coverage and the value with all fees and taxes included except the originalValue.
  */
-export function calculatePayment(desiredValue, interestRate) {
-  // checks if the desired value is a string and removes non-numeric characters
-  if (typeof desiredValue === "string") {
-    desiredValue = Number(desiredValue.replace(/\D/g, "")) / 100;
-  } else {
-    desiredValue = Number(desiredValue);
-  }
-  // converts the interest rate from percentage to decimal
-  interestRate = interestRate / 100;
-  // calculates the total value to be paid (desired value + interest rate)
-  const totalValue = desiredValue / (1 - interestRate);
-  // calculates the interest rate value
-  const interestValue = totalValue - desiredValue;
-  // calculates the value without interest rate coverage
-  const noInterestValue = desiredValue / (interestRate * 100);
-  // creates a JSON object with the information
+export function calculatePayment(originalValue, fee) {
+  // converte originalValue para número e remove caracteres não numéricos se necessário
+  originalValue =
+    typeof originalValue === "string"
+      ? Number(originalValue.replace(/\D/g, "")) / 100
+      : Number(originalValue);
+
+  // converte a taxa de porcentagem para decimal
+  fee /= 100;
+
+  // calcula o valor da taxa sobre o valor original
+  const feeValue = originalValue * fee;
+
+  // calcula o valor sem a taxa
+  const charged = originalValue - feeValue;
+
+  // calcula o valor total a ser pago (valor original + taxa sobre o valor original + taxa sobre a taxa)
+  const totalValue = originalValue + feeValue + feeValue * fee;
+
+  // calcula o valor total da taxa
+  const totalValueFee = totalValue - originalValue;
+
+  // calcula o valor total sem a taxa
+  const totalCharged = totalValue - totalValueFee;
+
+  // cria um objeto JSON com as informações
   const result = {
-    originalValue: Number(desiredValue.toFixed(2)),
+    originalValue: Number(originalValue.toFixed(2)),
     totalValue: Number(totalValue.toFixed(2)),
-    interestValue: Number(interestValue.toFixed(2)),
-    noInterestValue: Number(noInterestValue.toFixed(2)),
+    totalFee: Number(totalValueFee.toFixed(2)),
+    fee: Number(feeValue.toFixed(2)),
+    charged: Number(charged.toFixed(2)),
+    totalCharged: Number(totalCharged.toFixed(2)),
   };
-  // returns the JSON object with the information
+
+  // retorna o objeto JSON com as informações
   return result;
 }
 
@@ -110,11 +123,17 @@ export async function Payment(id) {
   }
 }
 
-export async function SendAlertData(user, message, amount, currency) {
+export async function SendAlertData(
+  user = {},
+  message = "",
+  amount = 0,
+  currency = "brl",
+  isTest = false
+) {
   return await axios.post(
     `https://api.streamelements.com/kappa/v2/tips/${channel}`,
     {
-      imported: true,
+      imported: !isTest,
       provider: "MercadoPago",
       currency: String(currency).toUpperCase(),
       message,

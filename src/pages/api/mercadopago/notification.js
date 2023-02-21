@@ -2,6 +2,9 @@ import { MerchantOrder, Payment, SendAlertData } from "@/lib/api/payments";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
+    console.log(req.headers);
+    console.log(req.query);
+    console.log(req.body);
     try {
       const id = req.body?.data?.id; // || req.query?.id || req.query?.["data.id"];
       const type = req.body?.type; // || req.query?.topic;
