@@ -1,13 +1,27 @@
-import { MerchantOrder, Payment } from "@/lib/api/payments";
+import { MerchantOrder, Payment, SendAlertData } from "@/lib/api/payments";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      const id = req.body?.data?.id || req.query?.id || req.query?.["data.id"];
-      const type = req.body?.type || req.query?.topic;
+      const id = req.body?.data?.id; // || req.query?.id || req.query?.["data.id"];
+      const type = req.body?.type; // || req.query?.topic;
       if (type === "payment" && !!id) {
         const payment = await Payment(id);
         console.log("Payment:", payment);
+        const { status, metadata, currency_id } = payment;
+        if (status === "approved" && metadata && currency_id) {
+          console.log(metadata, status);
+          await SendAlertData(
+            {
+              userId: metadata?.user_id || metadata?.userId,
+              username: metadata?.user_name || metadata?.userName,
+              email: metadata?.email,
+            },
+            metadata.message,
+            metadata.amount,
+            currency_id
+          );
+        }
       }
       if (type === "merchant_order" && !!id) {
         const order = await MerchantOrder(id);

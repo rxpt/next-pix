@@ -4,7 +4,7 @@ import mercadopago from "mercadopago";
 import { decode } from "jsonwebtoken";
 
 mercadopago.configure({
-  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN,
+  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN_TEST,
 });
 
 const { channel } = decode(process.env.STREAMELEMENTS_TOKEN);
@@ -59,13 +59,6 @@ export function calculatePayment(desiredValue, interestRate) {
 
 export async function CreateOrder(metadata, unit_price, notification_url) {
   try {
-    /*
-    metadata.userId
-    metadata.userName
-    metadata.message
-    metadata.email
-    metadata.amount
-    */
     const reference_id = uuid();
     const {
       body: { init_point: redirectURI },
@@ -96,40 +89,43 @@ export async function CreateOrder(metadata, unit_price, notification_url) {
 }
 
 export async function MerchantOrder(id) {
-  return await mercadopago.merchant_orders.get(id).then(({ body }) => body);
+  try {
+    return await mercadopago.merchant_orders.get(id).then(({ body }) => {
+      if (!body) throw new Error("Non-existent data");
+      return body;
+    });
+  } catch (err) {
+    return err;
+  }
 }
 
 export async function Payment(id) {
   try {
     return await mercadopago.payment.get(id).then(async ({ body }) => {
       if (!body) throw new Error("Non-existent data");
-      const { status, metadata, currency_id } = body;
-      if (status === "approved") {
-        await axios.post(
-          `https://api.streamelements.com/kappa/v2/tips/${channel}`,
-          {
-            user: {
-              userId: metadata?.user_id || metadata?.userId,
-              username: metadata?.user_name || metadata?.userName,
-              email: metadata?.email,
-            },
-            provider: "MercadoPago",
-            message: metadata?.message,
-            amount: metadata?.amount,
-            currency: String(currency_id).toUpperCase(),
-            imported: true,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${process.env.STREAMELEMENTS_TOKEN}`,
-            },
-          }
-        );
-      }
       return body;
     });
   } catch (err) {
     return err;
   }
+}
+
+export async function SendAlertData(user, message, amount, currency) {
+  return await axios.post(
+    `https://api.streamelements.com/kappa/v2/tips/${channel}`,
+    {
+      imported: true,
+      provider: "MercadoPago",
+      currency: String(currency).toUpperCase(),
+      message,
+      amount,
+      user,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.STREAMELEMENTS_TOKEN}`,
+      },
+    }
+  );
 }
