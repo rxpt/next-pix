@@ -4,7 +4,7 @@ import mercadopago from "mercadopago";
 import { decode } from "jsonwebtoken";
 
 mercadopago.configure({
-  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN_TEST,
+  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN,
 });
 
 const { channel } = decode(process.env.STREAMELEMENTS_TOKEN);

@@ -7,18 +7,24 @@ export default async function handler(req, res) {
       const type = req.body?.type; // || req.query?.topic;
       if (type === "payment" && !!id) {
         const payment = await Payment(id);
-        console.log("Payment:", payment);
         const { status, metadata, currency_id } = payment;
+        console.log(status, metadata);
         if (status === "approved" && metadata && currency_id) {
-          console.log(metadata, status);
+          const {
+            user_id: userId,
+            user_name: username,
+            email,
+            message,
+            amount,
+          } = metadata;
           await SendAlertData(
             {
-              userId: metadata?.user_id || metadata?.userId,
-              username: metadata?.user_name || metadata?.userName,
-              email: metadata?.email,
+              userId,
+              username,
+              email,
             },
-            metadata.message,
-            metadata.amount,
+            message,
+            amount,
             currency_id
           );
         }
